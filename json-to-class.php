@@ -1,19 +1,13 @@
 <?php
 
-$className = 'AccessToken';
+$className = 'AssociatedUser';
 $json = <<<JS
 {
-  "access_token": "f85632530bf277ec9ac6f649fc327f17",
-  "scope": "write_orders,read_customers",
-  "expires_in": 86399,
-  "associated_user_scope": "write_orders,read_customers",
-  "associated_user": {
     "id": 902541635,
     "first_name": "John",
     "last_name": "Smith",
     "email": "john@example.com",
     "account_owner": true
-  }
 }
 JS;
 
@@ -32,30 +26,34 @@ function snakeToCamel($string) {
     return lcfirst(snakeToPascal($string));
 }
 
-function determineType($value, $key = null) {
+function determineTypeVariables($value, $key = null) {
     $hintType = $type = 'string';
+    $getVerb = 'get';
 
     if (is_integer($value)) {
         $hintType = $type = 'int';
     } elseif (is_float($value)) {
         $hintType = $type = 'float';
+    } elseif (is_bool($value)) {
+        $hintType = $type = 'bool';
+        $getVerb = 'is';
     } elseif (is_string($value) && strpos($value, ',') !== false) {
         $arrayValues = array_map('trim', explode(',', $value));
-        $arrayValueType = determineType($arrayValues[0])[0];
+        $arrayValueType = determineTypeVariables($arrayValues[0])[0];
         $hintType = sprintf('array|%s[]', $arrayValueType);
         $type = 'array';
     } elseif (is_array($value)) {
         $hintType = $type = snakeToPascal($key);
     }
 
-    return [$hintType, $type];
+    return [$hintType, $type, $getVerb];
 }
 
 $getterSetterTemplate = <<<'GST'
     /**
      * @return %hintType%
      */
-    public function get%capVariableName%():? %type%
+    public function %getVerb%%capVariableName%():? %type%
     {
         return $this->%variableName%;
     }
@@ -76,7 +74,7 @@ $properties = [];
 $gettersAndSetters = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
-    list($hintType, $type) = determineType($value, $variableName);
+    list($hintType, $type, $getVerb) = determineTypeVariables($value, $variableName);
     $capVariableName = snakeToPascal($variableName);
     $camelName = snakeToCamel($variableName);
 
@@ -86,8 +84,8 @@ foreach ($jsonArray as $variableName => $value) {
     $properties[] = str_replace($propertyPlaceHolders, $propertyReplacements, $propertiesTemplate);
 
     // Prepare getter and setter
-    $getterSetterPlaceHolders = ['%className%', '%hintType%', '%type%', '%capVariableName%', '%variableName%'];
-    $getterSetterReplacements = [$className, $hintType, $type, $capVariableName, $camelName];
+    $getterSetterPlaceHolders = ['%className%', '%hintType%', '%type%', '%getVerb%', '%capVariableName%', '%variableName%'];
+    $getterSetterReplacements = [$className, $hintType, $type, $getVerb, $capVariableName, $camelName];
     $gettersAndSetters[] = str_replace($getterSetterPlaceHolders, $getterSetterReplacements, $getterSetterTemplate);
 }
 
