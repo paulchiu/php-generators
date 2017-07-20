@@ -1,13 +1,19 @@
 <?php
 
-$className = 'AssociatedUser';
+$className = 'AccessToken';
 $json = <<<JS
 {
+  "access_token": "f85632530bf277ec9ac6f649fc327f17",
+  "scope": "write_orders,read_customers",
+  "expires_in": 86399,
+  "associated_user_scope": "write_orders,read_customers",
+  "associated_user": {
     "id": 902541635,
     "first_name": "John",
     "last_name": "Smith",
     "email": "john@example.com",
     "account_owner": true
+  }
 }
 JS;
 
@@ -26,9 +32,27 @@ function snakeToCamel($string) {
     return lcfirst(snakeToPascal($string));
 }
 
+function pluralize($string) {
+    $lastChar = strtolower($string[strlen($string)-1]);
+
+    if ($lastChar === 's') {
+        return $string;
+    }
+
+    switch ($lastChar) {
+        case 'y':
+            return substr($string,0,-1).'ies';
+        case 's':
+            return $string.'es';
+        default:
+            return $string.'s';
+    }
+}
+
 function determineTypeVariables($value, $key = null) {
     $hintType = $type = 'string';
     $getVerb = 'get';
+    $quantNoun = $key;
 
     if (is_integer($value)) {
         $hintType = $type = 'int';
@@ -42,11 +66,12 @@ function determineTypeVariables($value, $key = null) {
         $arrayValueType = determineTypeVariables($arrayValues[0])[0];
         $hintType = sprintf('array|%s[]', $arrayValueType);
         $type = 'array';
+        $quantNoun = pluralize($key);
     } elseif (is_array($value)) {
         $hintType = $type = snakeToPascal($key);
     }
 
-    return [$hintType, $type, $getVerb];
+    return [$hintType, $type, $getVerb, $quantNoun];
 }
 
 $getterSetterTemplate = <<<'GST'
@@ -74,9 +99,9 @@ $properties = [];
 $gettersAndSetters = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
-    list($hintType, $type, $getVerb) = determineTypeVariables($value, $variableName);
-    $capVariableName = snakeToPascal($variableName);
-    $camelName = snakeToCamel($variableName);
+    list($hintType, $type, $getVerb, $quantNoun) = determineTypeVariables($value, $variableName);
+    $capVariableName = snakeToPascal($quantNoun);
+    $camelName = snakeToCamel($quantNoun);
 
     // Prepare property
     $propertyPlaceHolders = ['%hintType%', '%variableName%'];
