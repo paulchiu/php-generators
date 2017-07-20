@@ -22,8 +22,11 @@ JS;
 
 $jsonArray = json_decode($json, true);
 
-$propertiesTemplate = <<<'PT'
-PT;
+$dependencyTemplate = <<<'DT'
+    /** @var %capVariableName% $%camelName%Transformer */
+    protected $%camelName%Transformer;
+
+DT;
 
 $propertyAssignmentTemplate = <<<'GST'
         if (property_exists($shopifyJson%className%, '%variableName%')) {
@@ -37,8 +40,19 @@ $arrayAssignmentTemplate = <<<'AAT'
             $%camelName% = explode(',', $shopifyJson%className%->%variableName%);
             $%classVariableName%->set%capVariableName%($%camelName%);
         }
+
 AAT;
 
+$objectAssignTemplate = <<<'OAT'
+        if (property_exists($shopifyJson%className%, '%variableName%')) {
+            $%camelName% = $this->%camelName%Transformer
+                ->fromShopifyJson%capVariableName%($shopifyJson%className%->%variableName%);
+            $%classVariableName%->set%capVariableName%($%camelName%);
+        }
+
+OAT;
+
+$dependencies = [];
 $propertyAssignments = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
@@ -47,20 +61,36 @@ foreach ($jsonArray as $variableName => $value) {
     $camelName = snakeToCamel($quantNoun);
 
     // Determine template
-    $template = $propertyAssignmentTemplate;
-    if ($type === 'array') {
-        $template = $arrayAssignmentTemplate;
+    switch ($type) {
+        case 'string':
+        case 'int':
+        case 'float':
+        case 'bool':
+            $template = $propertyAssignmentTemplate;
+            break;
+        case 'array':
+            $template = $arrayAssignmentTemplate;
+            break;
+        default:
+            $template = $objectAssignTemplate;
     }
 
     // Do replacement
     $assignmentPlaceHolders = ['%className%', '%classVariableName%', '%variableName%', '%capVariableName%', '%camelName%'];
     $assignmentReplacements = [$className, $classVariableName, $variableName, $capVariableName, $camelName];
     $propertyAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $template);
+
+    // Do object templates
+    if (is_array($value)) {
+        $dependencies[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $dependencyTemplate);
+    }
 }
 
 $classTemplate = <<<'CT'
 class %className%
 {
+%dependencies%
+
     /**
      * @param ResponseInterface $response
      * @return %className%Model
@@ -85,8 +115,8 @@ class %className%
 }
 CT;
 
-$classPlaceHolders = ['%className%', '%classVariableName%', '%propertyAssignments%'];
-$classReplacements = [$className, $classVariableName, implode(PHP_EOL, $propertyAssignments)];
+$classPlaceHolders = ['%className%', '%classVariableName%', '%dependencies%', '%propertyAssignments%'];
+$classReplacements = [$className, $classVariableName, implode(PHP_EOL, $dependencies), implode(PHP_EOL, $propertyAssignments)];
 $classContent = str_replace($classPlaceHolders, $classReplacements, $classTemplate);
 
 echo $classContent;
