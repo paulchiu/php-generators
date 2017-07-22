@@ -30,7 +30,7 @@ $scopes = [
     'write_price_rules',
 ];
 
-$constTemplate = 'const SCOPE_%s = \'%s\';'.PHP_EOL;
+$constTemplate = 'const %s = \'%s\';'.PHP_EOL;
 
 foreach ($scopes as $s) {
     echo sprintf($constTemplate, strtoupper($s), $s);
@@ -38,14 +38,13 @@ foreach ($scopes as $s) {
 
 $withTemplate = <<<'W'
 
-
     /**
-     * @return AuthorizePrompt
+     * @return Scopes
      */
-    public function with%sScope(): AuthorizePrompt
+    public function with%s(): Scopes
     {
         $new = clone $this;
-        $new->scopes[] = self::SCOPE_%s;
+        $new->requestedScopes[] = self::%s;
 
         return $new;
     }
