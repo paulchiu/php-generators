@@ -2,12 +2,13 @@
 
 require_once __DIR__.'/lib/strings.php';
 
-$className = 'AccessTokenRequest';
+$className = 'NewDelegateAccessTokenRequest';
 $json = <<<JS
 {
-  "client_id": "foo",
-  "client_secret": "bar",
-  "code": "baz"
+  "shop": "foo",
+  "access_token": {"bar": "baz"},
+  "scopes": {"bar": "baz"},
+  "uri_template": "qux"
 }
 JS;
 
