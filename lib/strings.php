@@ -43,6 +43,8 @@ function determineTypeVariables($value, $key = null) {
         $hintType = sprintf('array|%s[]', $arrayValueType);
         $type = 'array';
         $quantNoun = pluralize($key);
+    } elseif (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/', $value) === 1) {
+        $hintType = $type = 'DateTime';
     } elseif (is_array($value)) {
         $hintType = $type = snakeToPascal($key);
     }

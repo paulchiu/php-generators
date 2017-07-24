@@ -2,13 +2,12 @@
 
 require_once __DIR__.'/lib/strings.php';
 
-$className = 'NewDelegateAccessTokenRequest';
+$className = 'ApiCredentials';
 $json = <<<JS
 {
   "shop": "foo",
-  "access_token": {"bar": "baz"},
-  "scopes": {"bar": "baz"},
-  "uri_template": "qux"
+  "o_auth_access_token": {"bar": "baz"},
+  "private_auth_credentials": {"bar": "baz"}
 }
 JS;
 
