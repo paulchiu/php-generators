@@ -1,22 +1,63 @@
 <?php
 
 require_once __DIR__.'/lib/strings.php';
+require_once __DIR__.'/lib/typed-templates.php';
 
-$className = 'Shop';
+$className = 'Customer';
 $unwrap = true;
 $classVariableName = lcfirst($className);
 $snakeClassName = pascalToSnake($className);
 $json = <<<JS
 {
-  "ids": "3,5",
-  "since_id": 7,
-  "created_at_min": "2014-04-25T16:15:47-04:00",
-  "created_at_max": "2014-04-25T16:15:47-04:00",
-  "updated_at_min": "2014-04-25T16:15:47-04:00",
-  "updated_at_max": "2014-04-25T16:15:47-04:00",
-  "limit": 11,
-  "page": 13,
-  "customer_fields": {"foo": "bar"}
+    "id": 21887169,
+    "name": "store:596ab301c9809",
+    "email": "foo@example.com",
+    "domain": "store-596ab301c9809.myshopify.com",
+    "created_at": "2017-07-16T10:29:53+10:00",
+    "province": "Queensland",
+    "country": "AU",
+    "address1": "123 Fake Street",
+    "zip": "4000",
+    "city": "Brisbane",
+    "source": null,
+    "phone": "0410464875",
+    "updated_at": "2017-07-16T11:25:02+10:00",
+    "customer_email": null,
+    "latitude": -27.4697707,
+    "longitude": 153.0251235,
+    "primary_location_id": 46246099,
+    "primary_locale": "en",
+    "address2": "",
+    "country_code": "AU",
+    "country_name": "Australia",
+    "currency": "AUD",
+    "timezone": "(GMT+10:00) Brisbane",
+    "iana_timezone": "Australia/Brisbane",
+    "shop_owner": "Paul Chiu",
+    "money_format": "foo",
+    "money_with_currency_format": "foo",
+    "weight_unit": "kg",
+    "province_code": "QLD",
+    "taxes_included": false,
+    "tax_shipping": false,
+    "county_taxes": true,
+    "plan_display_name": "affiliate",
+    "plan_name": "affiliate",
+    "has_discounts": false,
+    "has_gift_cards": false,
+    "myshopify_domain": "store-596ab301c9809.myshopify.com",
+    "google_apps_domain": null,
+    "google_apps_login_enabled": false,
+    "money_in_emails_format": "foo",
+    "money_with_currency_in_emails_format": "foo",
+    "eligible_for_payments": true,
+    "requires_extra_payments_agreement": false,
+    "password_enabled": true,
+    "has_storefront": true,
+    "eligible_for_card_reader_giveaway": false,
+    "finances": true,
+    "setup_required": false,
+    "force_ssl": true
 }
 JS;
 
@@ -27,38 +68,6 @@ $dependencyTemplate = <<<'DT'
     protected $%camelName%Transformer;
 
 DT;
-
-$propertyAssignmentTemplate = <<<'GST'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
-            $%classVariableName%->set%capVariableName%($shopifyJson%className%->%variableName%);
-        }
-
-GST;
-
-$arrayAssignmentTemplate = <<<'AAT'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
-            $%camelName% = explode(',', $shopifyJson%className%->%variableName%);
-            $%classVariableName%->set%capVariableName%($%camelName%);
-        }
-
-AAT;
-
-$objectAssignTemplate = <<<'OAT'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
-            $%camelName% = $this->%camelName%Transformer
-                ->fromShopifyJson%capVariableName%($shopifyJson%className%->%variableName%);
-            $%classVariableName%->set%capVariableName%($%camelName%);
-        }
-
-OAT;
-
-$dateAssignmentTemplate = <<<'DAT'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
-            $%camelName% = new DateTime($shopifyJson%className%->%variableName%);
-            $%classVariableName%->set%capVariableName%($%camelName%);
-        }
-
-DAT;
 
 $unwrapResponseTemplate = <<<'UT'
     /**
@@ -90,36 +99,27 @@ $responseTemplate = <<<'RT'
     }
 RT;
 
+
 $dependencies = [];
 $propertyAssignments = [];
+$arrayAssignments = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
     list($hintType, $type, $getVerb, $quantNoun) = determineTypeVariables($value, $variableName);
     $capVariableName = snakeToPascal($quantNoun);
     $camelName = snakeToCamel($quantNoun);
 
-    // Determine template
-    switch ($type) {
-        case 'string':
-        case 'int':
-        case 'float':
-        case 'bool':
-            $template = $propertyAssignmentTemplate;
-            break;
-        case 'array':
-            $template = $arrayAssignmentTemplate;
-            break;
-        case 'DateTime':
-            $template = $dateAssignmentTemplate;
-            break;
-        default:
-            $template = $objectAssignTemplate;
-    }
+    // Determine templates
+    $propertyTemplate = getPropertyAssignmentTemplate($type);
+    $arrayTemplate = getArrayAssignmentTemplate($type);
 
-    // Do replacement
+    // Prepare array assignments
     $assignmentPlaceHolders = ['%className%', '%classVariableName%', '%variableName%', '%capVariableName%', '%camelName%'];
     $assignmentReplacements = [$className, $classVariableName, $variableName, $capVariableName, $camelName];
-    $propertyAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $template);
+
+    // Do replacement
+    $propertyAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $propertyTemplate);
+    $arrayAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $arrayTemplate);
 
     // Do object templates
     if (is_array($value)) {
@@ -150,11 +150,23 @@ class %className%
 %propertyAssignments%
         return $%classVariableName%;
     }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $array = [];
+
+%arrayAssignments%
+
+        return $array;
+    }
 }
 CT;
 
-$classPlaceHolders = ['%className%', '%classVariableName%', '%responseParser%', '%dependencies%', '%propertyAssignments%'];
-$classReplacements = [$className, $classVariableName, $responseParser, implode(PHP_EOL, $dependencies), implode(PHP_EOL, $propertyAssignments)];
+$classPlaceHolders = ['%className%', '%classVariableName%', '%responseParser%', '%dependencies%', '%propertyAssignments%', '%arrayAssignments%'];
+$classReplacements = [$className, $classVariableName, $responseParser, implode(PHP_EOL, $dependencies), implode(PHP_EOL, $propertyAssignments), implode(PHP_EOL, $arrayAssignments)];
 $classContent = str_replace($classPlaceHolders, $classReplacements, $classTemplate);
 
 echo $classContent;

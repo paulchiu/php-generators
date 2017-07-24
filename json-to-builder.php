@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__.'/lib/strings.php';
+require_once __DIR__.'/lib/typed-templates.php';
 
 $className = 'GetCustomersRequest';
 $json = <<<JS
@@ -39,27 +40,6 @@ $witherTemplate = <<<'W'
 
 W;
 
-$propertyAssignmentTemplate = <<<'GST'
-        if (!is_null($this->%camelName%)) {
-            $array['%variableName%'] = $this->%camelName%;
-        }
-
-GST;
-
-$arrayAssignmentTemplate = <<<'AAT'
-        if (!empty($this->%camelName%)) {
-            $array['%variableName%'] = implode(',', $this->%camelName%);
-        }
-
-AAT;
-
-$dateAssignmentTemplate = <<<'DAT'
-        if (!is_null($this->%camelName%)) {
-            $array['%variableName%'] = $this->%camelName%->format(DateTime::ISO8601);
-        }
-
-DAT;
-
 $properties = [];
 $withers = [];
 $arrayAssignments = [];
@@ -69,21 +49,10 @@ foreach ($jsonArray as $variableName => $value) {
     $capVariableName = snakeToPascal($quantNoun);
     $camelName = snakeToCamel($quantNoun);
 
-    // Determine array assignment template
-    switch ($type) {
-        case 'array':
-            $template = $arrayAssignmentTemplate;
-            break;
-        case 'DateTime':
-            $template = $dateAssignmentTemplate;
-            break;
-        default:
-            $template = $propertyAssignmentTemplate;
-    }
-
     // Prepare array assignments
     $assignmentPlaceHolders = ['%className%', '%variableName%', '%capVariableName%', '%camelName%'];
     $assignmentReplacements = [$className, $variableName, $capVariableName, $camelName];
+    $template = getArrayAssignmentTemplate($type);
     $arrayAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $template);
 
     // Prepare property
