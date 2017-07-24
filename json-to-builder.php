@@ -39,13 +39,52 @@ $witherTemplate = <<<'W'
 
 W;
 
+$propertyAssignmentTemplate = <<<'GST'
+        if (!is_null($this->%camelName%)) {
+            $array['%variableName%'] = $this->%camelName%;
+        }
+
+GST;
+
+$arrayAssignmentTemplate = <<<'AAT'
+        if (!empty($this->%camelName%)) {
+            $array['%variableName%'] = implode(',', $this->%camelName%);
+        }
+
+AAT;
+
+$dateAssignmentTemplate = <<<'DAT'
+        if (!is_null($this->%camelName%)) {
+            $array['%variableName%'] = $this->%camelName%->format(DateTime::ISO8601);
+        }
+
+DAT;
+
 $properties = [];
 $withers = [];
+$arrayAssignments = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
     list($hintType, $type, $getVerb, $quantNoun) = determineTypeVariables($value, $variableName);
     $capVariableName = snakeToPascal($quantNoun);
     $camelName = snakeToCamel($quantNoun);
+
+    // Determine array assignment template
+    switch ($type) {
+        case 'array':
+            $template = $arrayAssignmentTemplate;
+            break;
+        case 'DateTime':
+            $template = $dateAssignmentTemplate;
+            break;
+        default:
+            $template = $propertyAssignmentTemplate;
+    }
+
+    // Prepare array assignments
+    $assignmentPlaceHolders = ['%className%', '%variableName%', '%capVariableName%', '%camelName%'];
+    $assignmentReplacements = [$className, $variableName, $capVariableName, $camelName];
+    $arrayAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $template);
 
     // Prepare property
     $propertyPlaceHolders = ['%hintType%', '%variableName%'];
@@ -63,12 +102,24 @@ class %className%
 {
 %properties%
 
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $array = [];
+
+%arrayAssignments%
+
+        return $array;
+    }
+
 %withers%
 }
 CT;
 
-$classPlaceHolders = ['%className%', '%properties%', '%withers%'];
-$classReplacements = [$className, implode(PHP_EOL, $properties), implode(PHP_EOL, $withers)];
+$classPlaceHolders = ['%className%', '%properties%', '%withers%', '%arrayAssignments%'];
+$classReplacements = [$className, implode(PHP_EOL, $properties), implode(PHP_EOL, $withers), implode(PHP_EOL, $arrayAssignments)];
 $classContent = str_replace($classPlaceHolders, $classReplacements, $classTemplate);
 
 echo $classContent;
