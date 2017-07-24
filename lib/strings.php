@@ -34,7 +34,7 @@ function determineTypeVariables($value, $key = null) {
     $getVerb = 'get';
     $quantNoun = $key;
 
-    if (is_integer($value)) {
+    if (is_numeric($value) && (int) $value == $value) {
         $hintType = $type = 'int';
     } elseif (is_float($value)) {
         $hintType = $type = 'float';

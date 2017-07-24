@@ -2,12 +2,18 @@
 
 require_once __DIR__.'/lib/strings.php';
 
-$className = 'ApiCredentials';
+$className = 'GetCustomersRequest';
 $json = <<<JS
 {
-  "shop": "foo",
-  "o_auth_access_token": {"bar": "baz"},
-  "private_auth_credentials": {"bar": "baz"}
+  "ids": "3,5",
+  "since_id": 7,
+  "created_at_min": "2014-04-25T16:15:47-04:00",
+  "created_at_max": "2014-04-25T16:15:47-04:00",
+  "updated_at_min": "2014-04-25T16:15:47-04:00",
+  "updated_at_max": "2014-04-25T16:15:47-04:00",
+  "limit": 11,
+  "page": 13,
+  "customer_fields": {"foo": "bar"}
 }
 JS;
 
