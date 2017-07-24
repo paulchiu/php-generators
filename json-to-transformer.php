@@ -5,7 +5,7 @@ require_once __DIR__.'/lib/strings.php';
 $className = 'Shop';
 $unwrap = true;
 $classVariableName = lcfirst($className);
-$snakeClassName = ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $className)), '_');
+$snakeClassName = pascalToSnake($className);
 $json = <<<JS
 {
     "id": 21887169,
@@ -110,11 +110,11 @@ $unwrapResponseTemplate = <<<'UT'
     {
         $stdClass = json_decode($response->getBody()->getContents());
 
-        if (!property_exists($stdClass, 'shop')) {
-            throw new MissingExpectedAttributeException('shop');
+        if (!property_exists($stdClass, '%snakeClassName%')) {
+            throw new MissingExpectedAttributeException('%snakeClassName%');
         }
 
-        return $this->fromShopifyJson%className%($stdClass);
+        return $this->fromShopifyJson%className%($stdClass->%snakeClassName%);
     }
 UT;
 

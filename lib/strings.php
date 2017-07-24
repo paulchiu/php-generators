@@ -4,6 +4,10 @@ function snakeToPascal($string) {
     return str_replace('_', '', ucwords($string, '_'));
 }
 
+function pascalToSnake($string) {
+	return ltrim(strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', '_$0', $string)), '_');
+}
+
 function snakeToCamel($string) {
     return lcfirst(snakeToPascal($string));
 }
