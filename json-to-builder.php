@@ -45,14 +45,14 @@ $withers = [];
 $arrayAssignments = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
-    list($hintType, $type, $getVerb, $quantNoun) = determineTypeVariables($value, $variableName);
+    list($hintType, $type, $getVerb, $quantNoun, $nullable, $variableName) = determineTypeVariables($value, $variableName);
     $capVariableName = snakeToPascal($quantNoun);
     $camelName = snakeToCamel($quantNoun);
 
     // Prepare array assignments
     $assignmentPlaceHolders = ['%className%', '%variableName%', '%capVariableName%', '%camelName%'];
     $assignmentReplacements = [$className, $variableName, $capVariableName, $camelName];
-    $template = getArrayAssignmentTemplate($type);
+    $template = getSelfArrayAssignmentTemplate($type);
     $arrayAssignments[] = str_replace($assignmentPlaceHolders, $assignmentReplacements, $template);
 
     // Prepare property

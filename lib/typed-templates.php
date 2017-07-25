@@ -53,7 +53,7 @@ DAT;
     return $propertyTemplate;
 }
 
-function getArrayAssignmentTemplate($type) {
+function getSelfArrayAssignmentTemplate($type) {
     $arrayPropertyAssignmentTemplate = <<<'AGST'
         if (!is_null($this->%camelName%)) {
             $array['%variableName%'] = $this->%camelName%;
@@ -87,4 +87,12 @@ ADAT;
     }
 
     return $arrayTemplate;
+}
+
+function getObjectArrayAssignmentTemplate() {
+    $arrayAssignmentTemplate = <<<'AGST'
+        $array['%variableName%'] = $%classVariableName%->%getVerb%%capVariableName%();
+AGST;
+
+    return $arrayAssignmentTemplate;
 }
