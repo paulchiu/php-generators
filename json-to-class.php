@@ -2,58 +2,46 @@
 
 require_once __DIR__.'/lib/strings.php';
 
-$className = 'Shop';
+$className = 'Customer';
 $json = <<<JS
 {
-    "id": 21887169,
-    "name": "store:596ab301c9809",
-    "email": "accounts@paulchiu.net",
-    "domain": "store-596ab301c9809.myshopify.com",
-    "created_at": "2017-07-16T10:29:53+10:00",
-    "province": "Queensland",
-    "country": "AU",
-    "address1": "123 Fake Street",
-    "zip": "4000",
-    "city": "Brisbane",
-    "source": null,
-    "phone": "0410464875",
-    "updated_at": "2017-07-16T11:25:02+10:00",
-    "customer_email": null,
-    "latitude": -27.4697707,
-    "longitude": 153.0251235,
-    "primary_location_id": 46246099,
-    "primary_locale": "en",
-    "address2": "",
-    "country_code": "AU",
-    "country_name": "Australia",
-    "currency": "AUD",
-    "timezone": "(GMT+10:00) Brisbane",
-    "iana_timezone": "Australia/Brisbane",
-    "shop_owner": "Paul Chiu",
-    "money_format": "foo",
-    "money_with_currency_format": "foo",
-    "weight_unit": "kg",
-    "province_code": "QLD",
-    "taxes_included": false,
-    "tax_shipping": false,
-    "county_taxes": true,
-    "plan_display_name": "affiliate",
-    "plan_name": "affiliate",
-    "has_discounts": false,
-    "has_gift_cards": false,
-    "myshopify_domain": "store-596ab301c9809.myshopify.com",
-    "google_apps_domain": null,
-    "google_apps_login_enabled": false,
-    "money_in_emails_format": "foo",
-    "money_with_currency_in_emails_format": "foo",
-    "eligible_for_payments": true,
-    "requires_extra_payments_agreement": false,
-    "password_enabled": true,
-    "has_storefront": true,
-    "eligible_for_card_reader_giveaway": false,
-    "finances": true,
-    "setup_required": false,
-    "force_ssl": true
+    "id": 207119551,
+    "email": "bob.norman@hostmail.com",
+    "accepts_marketing": false,
+    "created_at": "2017-05-26T14:06:54-04:00",
+    "updated_at": "2017-05-26T14:06:54-04:00",
+    "first_name": "Bob",
+    "last_name": "Norman",
+    "orders_count": 1,
+    "nullable_state": "disabled",
+    "total_spent": "41.94",
+    "nullable_last_order_id": 450789469,
+    "note": null,
+    "verified_email": true,
+    "multipass_identifier": null,
+    "tax_exempt": false,
+    "phone": null,
+    "tags": "",
+    "nullable_last_order_name": "#1001",
+    "addresses": "foo,bar",
+    "default_address": {
+      "id": 207119551,
+      "first_name": null,
+      "last_name": null,
+      "company": null,
+      "address1": "Chestnut Street 92",
+      "address2": "",
+      "city": "Louisville",
+      "province": "Kentucky",
+      "country": "United States",
+      "zip": "40202",
+      "phone": "555-625-1199",
+      "name": "",
+      "province_code": "KY",
+      "country_code": "US",
+      "country_name": "United States",
+      "default": true
+    }
 }
 JS;
 
@@ -77,7 +65,7 @@ $getterSetterTemplate = <<<'GST'
      * @param %hintType% $%variableName%
      * @return %className%
      */
-    public function set%capVariableName%(%type% $%variableName%): %className%
+    public function set%capVariableName%(%nullable%%type% $%variableName%): %className%
     {
         $this->%variableName% = $%variableName%;
         return $this;
@@ -89,7 +77,7 @@ $properties = [];
 $gettersAndSetters = [];
 foreach ($jsonArray as $variableName => $value) {
     // Compute replacement values
-    list($hintType, $type, $getVerb, $quantNoun) = determineTypeVariables($value, $variableName);
+    list($hintType, $type, $getVerb, $quantNoun, $nullable, $variableName) = determineTypeVariables($value, $variableName);
     $capVariableName = snakeToPascal($quantNoun);
     $camelName = snakeToCamel($quantNoun);
 
@@ -99,8 +87,8 @@ foreach ($jsonArray as $variableName => $value) {
     $properties[] = str_replace($propertyPlaceHolders, $propertyReplacements, $propertiesTemplate);
 
     // Prepare getter and setter
-    $getterSetterPlaceHolders = ['%className%', '%hintType%', '%type%', '%getVerb%', '%capVariableName%', '%variableName%'];
-    $getterSetterReplacements = [$className, $hintType, $type, $getVerb, $capVariableName, $camelName];
+    $getterSetterPlaceHolders = ['%className%', '%hintType%', '%type%', '%getVerb%', '%capVariableName%', '%variableName%', '%nullable%'];
+    $getterSetterReplacements = [$className, $hintType, $type, $getVerb, $capVariableName, $camelName, $nullable];
     $gettersAndSetters[] = str_replace($getterSetterPlaceHolders, $getterSetterReplacements, $getterSetterTemplate);
 }
 

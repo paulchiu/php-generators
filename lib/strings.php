@@ -33,7 +33,16 @@ function determineTypeVariables($value, $key = null) {
     $hintType = $type = 'string';
     $getVerb = 'get';
     $quantNoun = $key;
+    $nullable = '';
 
+    // Remove nullable prefix
+    if (strpos($key, 'nullable_') !== false) {
+        $key = str_replace('nullable_', '', $key);
+        $quantNoun = $key;
+        $nullable = '?';
+    }
+
+    // Detect value type
     if (is_numeric($value) && (int) $value == $value) {
         $hintType = $type = 'int';
     } elseif (is_float($value)) {
@@ -41,6 +50,8 @@ function determineTypeVariables($value, $key = null) {
     } elseif (is_bool($value)) {
         $hintType = $type = 'bool';
         $getVerb = 'is';
+    } elseif (is_null($value)) {
+        $nullable = '?';
     } elseif (is_string($value) && strpos($value, ',') !== false) {
         $arrayValues = array_map('trim', explode(',', $value));
         $arrayValueType = determineTypeVariables($arrayValues[0])[0];
@@ -53,6 +64,6 @@ function determineTypeVariables($value, $key = null) {
         $hintType = $type = snakeToPascal($key);
     }
 
-    return [$hintType, $type, $getVerb, $quantNoun];
+    return [$hintType, $type, $getVerb, $quantNoun, $nullable, $key];
 }
 
