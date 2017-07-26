@@ -5,6 +5,7 @@ require_once __DIR__.'/lib/typed-templates.php';
 
 $className = 'Customer';
 $unwrap = true;
+$acceptsArrayResponse = true;
 $classVariableName = lcfirst($className);
 $snakeClassName = pascalToSnake($className);
 $json = <<<JS
@@ -73,7 +74,27 @@ $unwrapResponseTemplate = <<<'UT'
 
         return $this->fromShopifyJson%className%($stdClass->%snakeClassName%);
     }
+    
 UT;
+
+$arrayResponseTemplate = <<<'ART'
+    /**
+     * @param ResponseInterface $response
+     * @return %className%Model
+     * @throws MissingExpectedAttributeException
+     */
+    public function fromArrayResponse(ResponseInterface $response): array
+    {
+        $stdClass = json_decode($response->getBody()->getContents());
+
+        if (!property_exists($stdClass, '%snakeClassName%')) {
+            throw new MissingExpectedAttributeException('%snakeClassName%');
+        }
+
+        return array_map([$this, 'fromShopifyJson%className%'], $stdClass->%snakeClassName%);
+    }
+    
+ART;
 
 $responseTemplate = <<<'RT'
     /**
@@ -120,12 +141,30 @@ $responsePlaceHolders = ['%className%', '%snakeClassName%'];
 $responseReplacements = [$className, $snakeClassName];
 $responseParser = str_replace($responsePlaceHolders, $responseReplacements, $responseTemplate);
 
+$arrayResponseParser = '';
+$arrayResponseParserInterface = '';
+$arrayResponseParserInterfaceImport = '';
+if ($acceptsArrayResponse) {
+    $responsePlaceHolders = ['%className%', '%snakeClassName%'];
+    $responseReplacements = [$className, pluralize($snakeClassName)];
+    $arrayResponseParser = str_replace($responsePlaceHolders, $responseReplacements, $arrayResponseTemplate);
+    $arrayResponseParserInterface = ' implements ArrayResponseTransformerInterface';
+    $arrayResponseParserInterfaceImport = 'use Yaspa\Interfaces\ArrayResponseTransformerInterface;' . PHP_EOL;
+}
+
 $classTemplate = <<<'CT'
-class %className%
+use DateTime;
+use Psr\Http\Message\ResponseInterface;
+use Yaspa\Exceptions\MissingExpectedAttributeException;
+%arrayResponseParserInterfaceImport%use stdClass;
+
+class %className%%arrayResponseParserInterface%
 {
 %dependencies%
 
 %responseParser%
+
+%arrayResponseParser%
 
     /**
      * @param stdClass $shopifyJson%className%
@@ -154,8 +193,8 @@ class %className%
 }
 CT;
 
-$classPlaceHolders = ['%className%', '%classVariableName%', '%responseParser%', '%dependencies%', '%propertyAssignments%', '%arrayAssignments%'];
-$classReplacements = [$className, $classVariableName, $responseParser, implode(PHP_EOL, $dependencies), implode(PHP_EOL, $propertyAssignments), implode(PHP_EOL, $arrayAssignments)];
+$classPlaceHolders = ['%className%', '%classVariableName%', '%responseParser%', '%arrayResponseParserInterface%', '%arrayResponseParserInterfaceImport%', '%arrayResponseParser%', '%dependencies%', '%propertyAssignments%', '%arrayAssignments%'];
+$classReplacements = [$className, $classVariableName, $responseParser, $arrayResponseParserInterface, $arrayResponseParserInterfaceImport, $arrayResponseParser, implode(PHP_EOL, $dependencies), implode(PHP_EOL, $propertyAssignments), implode(PHP_EOL, $arrayAssignments)];
 $classContent = str_replace($classPlaceHolders, $classReplacements, $classTemplate);
 
 echo $classContent;
