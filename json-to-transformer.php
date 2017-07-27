@@ -3,50 +3,23 @@
 require_once __DIR__.'/lib/strings.php';
 require_once __DIR__.'/lib/typed-templates.php';
 
-$className = 'Customer';
+$className = 'Metafield';
 $unwrap = true;
 $acceptsArrayResponse = true;
 $classVariableName = lcfirst($className);
 $snakeClassName = pascalToSnake($className);
 $json = <<<JS
 {
-    "id": 207119551,
-    "email": "bob.norman@hostmail.com",
-    "accepts_marketing": false,
-    "created_at": "2017-05-26T14:06:54-04:00",
-    "updated_at": "2017-05-26T14:06:54-04:00",
-    "first_name": "Bob",
-    "last_name": "Norman",
-    "orders_count": 1,
-    "nullable_state": "disabled",
-    "total_spent": "41.94",
-    "nullable_last_order_id": 450789469,
-    "note": null,
-    "verified_email": true,
-    "multipass_identifier": null,
-    "tax_exempt": false,
-    "phone": null,
-    "tags": "",
-    "nullable_last_order_name": "#1001",
-    "addresses": "foo,bar",
-    "default_address": {
-      "id": 207119551,
-      "first_name": null,
-      "last_name": null,
-      "company": null,
-      "address1": "Chestnut Street 92",
-      "address2": "",
-      "city": "Louisville",
-      "province": "Kentucky",
-      "country": "United States",
-      "zip": "40202",
-      "phone": "555-625-1199",
-      "name": "",
-      "province_code": "KY",
-      "country_code": "US",
-      "country_name": "United States",
-      "default": true
-    }
+    "id": 915396088,
+    "namespace": "inventory",
+    "key": "warehouse",
+    "value": 25,
+    "value_type": "integer",
+    "description": null,
+    "owner_id": 690933842,
+    "created_at": "2017-03-07T17:16:51-05:00",
+    "updated_at": "2017-03-07T17:16:51-05:00",
+    "owner_resource": "shop"
 }
 JS;
 
@@ -80,7 +53,7 @@ UT;
 $arrayResponseTemplate = <<<'ART'
     /**
      * @param ResponseInterface $response
-     * @return %className%Model
+     * @return array|%className%Model[]
      * @throws MissingExpectedAttributeException
      */
     public function fromArrayResponse(ResponseInterface $response): array

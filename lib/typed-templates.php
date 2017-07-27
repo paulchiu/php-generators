@@ -53,7 +53,7 @@ DAT;
     return $propertyTemplate;
 }
 
-function getSelfArrayAssignmentTemplate($type) {
+function getSelfArrayAssignmentTemplate($type, $hintType = null) {
     $arrayPropertyAssignmentTemplate = <<<'AGST'
         if (!is_null($this->%camelName%)) {
             $array['%variableName%'] = $this->%camelName%;
@@ -75,6 +75,21 @@ AAAT;
 
 ADAT;
 
+    $arrayArrayObjectAssignmentTemplate = <<<'AAOAT'
+        if (!empty($this->%camelName%)) {
+            $array['%variableName%'] = array_map([$this->%variableName%Transformer, 'toArray'], $this->%variableName%);
+        }
+
+AAOAT;
+
+    $arrayObjectAssignmentTemplate = <<<'AOAT'
+        if (!is_null($this->%camelName%)) {
+            $array = $this->%camelName%Transformer->toArray($this->%camelName%);
+        }
+
+AOAT;
+
+
     switch ($type) {
         case 'array':
             $arrayTemplate = $arrayArrayAssignmentTemplate;
@@ -84,6 +99,12 @@ ADAT;
             break;
         default:
             $arrayTemplate = $arrayPropertyAssignmentTemplate;
+    }
+
+    if (strpos($hintType, 'array|') !== false) {
+        $arrayTemplate = $arrayArrayObjectAssignmentTemplate;
+    } elseif (strpos($type, 'Model') !== false) {
+        $arrayTemplate = $arrayObjectAssignmentTemplate;
     }
 
     return $arrayTemplate;
