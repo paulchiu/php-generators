@@ -3,18 +3,14 @@
 require_once __DIR__.'/lib/strings.php';
 require_once __DIR__.'/lib/typed-templates.php';
 
-$className = 'GetCustomersRequest';
+$className = 'CreateNewCustomersRequest';
 $json = <<<JS
 {
-  "ids": "3,5",
-  "since_id": 7,
-  "created_at_min": "2014-04-25T16:15:47-04:00",
-  "created_at_max": "2014-04-25T16:15:47-04:00",
-  "updated_at_min": "2014-04-25T16:15:47-04:00",
-  "updated_at_max": "2014-04-25T16:15:47-04:00",
-  "limit": 11,
-  "page": 13,
-  "customer_fields": {"foo": "bar"}
+  "customer_model": {"foo": "bar"},
+  "nullable_send_email_invite": true,
+  "array_metafields": [{"foo": "bar"}],
+  "nullable_password": "newpass",
+  "nullable_password_confirmation": "newpass"
 }
 JS;
 

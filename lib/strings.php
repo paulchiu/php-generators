@@ -58,6 +58,12 @@ function determineTypeVariables($value, $key = null) {
         $hintType = sprintf('array|%s[]', $arrayValueType);
         $type = 'array';
         $quantNoun = pluralize($key);
+    } elseif (strpos($key, 'array_') !== false) {
+        $key = str_replace('array_', '', $key);
+        $quantNoun = $key;
+        $arrayValueType = determineTypeVariables($value[0], $key)[0];
+        $hintType = sprintf('array|%s[]', $arrayValueType);
+        $type = 'array';
     } elseif (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/', $value) === 1) {
         $hintType = $type = 'DateTime';
     } elseif (is_array($value)) {
