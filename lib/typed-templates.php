@@ -63,7 +63,7 @@ AGST;
 
     $arrayArrayAssignmentTemplate = <<<'AAAT'
         if (!empty($this->%camelName%)) {
-            $array['%variableName%'] = implode(',', $this->%camelName%);
+            $array['%variableName%'] = array_map('trim', implode(',', $this->%camelName%));
         }
 
 AAAT;

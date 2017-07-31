@@ -3,16 +3,13 @@
 require_once __DIR__.'/lib/strings.php';
 require_once __DIR__.'/lib/typed-templates.php';
 
-$className = 'CreateNewCustomersRequest';
+$className = 'SendAccountInviteRequest';
 $filterEmpty = true;
-$wrapAsModel = 'customer';
+$wrapAsModel = 'customer_invite';
 $json = <<<JS
 {
-  "customer_model": {"foo": "bar"},
-  "nullable_send_email_invite": true,
-  "array_metafields": [{"foo": "bar"}],
-  "nullable_password": "newpass",
-  "nullable_password_confirmation": "newpass"
+  "customer": {"foo": "bar"},
+  "nullable_customer_invite": {"foo": "bar"}
 }
 JS;
 

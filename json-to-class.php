@@ -2,19 +2,16 @@
 
 require_once __DIR__.'/lib/strings.php';
 
-$className = 'Metafield';
+$className = 'CustomerInvite';
 $json = <<<JS
 {
-    "id": 915396088,
-    "namespace": "inventory",
-    "key": "warehouse",
-    "value": 25,
-    "value_type": "integer",
-    "description": null,
-    "owner_id": 690933842,
-    "created_at": "2017-03-07T17:16:51-05:00",
-    "updated_at": "2017-03-07T17:16:51-05:00",
-    "owner_resource": "shop"
+    "to": "new_test_email@shopify.com",
+    "from": "noaccesssteve@jobs.com",
+    "array_bcc": [
+      "noaccesssteve@jobs.com"
+    ],
+    "subject": "Welcome to my new shop",
+    "custom_message": "My awesome new store"
 }
 JS;
 
