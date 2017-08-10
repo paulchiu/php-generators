@@ -26,7 +26,9 @@ AAT;
 OAT;
 
     $dateAssignmentTemplate = <<<'DAT'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
+        if (property_exists($shopifyJson%className%, '%variableName%')
+            && !empty($shopifyJson%className%->%variableName%)
+        ) {
             $%camelName% = new DateTime($shopifyJson%className%->%variableName%);
             $%classVariableName%->set%capVariableName%($%camelName%);
         }
