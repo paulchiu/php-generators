@@ -110,10 +110,53 @@ AOAT;
     return $arrayTemplate;
 }
 
-function getObjectArrayAssignmentTemplate() {
+function getObjectArrayAssignmentTemplate($type, $hintType = null) {
     $arrayAssignmentTemplate = <<<'AGST'
         $array['%variableName%'] = $%classVariableName%->%getVerb%%capVariableName%();
 AGST;
 
-    return $arrayAssignmentTemplate;
+    $arrayArrayStringAssignmentTemplate = <<<'AASAT'
+        $array['%variableName%'] = implode(',', $%classVariableName%->%getVerb%%capVariableName%());
+AASAT;
+
+    $arrayDateTimeAssignmentTemplate = <<<'ADTAT'
+        $array['%variableName%'] = $%classVariableName%->%getVerb%%capVariableName%()->format(DateTime::ISO8601);
+ADTAT;
+
+    $arrayObjectAssignmentTemplate = <<<'ADTAT'
+        if ($%classVariableName%->%getVerb%%capVariableName%()) {
+            $array['%variableName%'] = $this->%variableName%Transformer->toArray($%classVariableName%->%getVerb%%capVariableName%());
+        }
+ADTAT;
+
+    $arrayArrayObjectAssignmentTemplate = <<<'AAOAT'
+        if ($%classVariableName%->%getVerb%%capVariableName%()) {
+            $array['%variableName%'] = array_map([$this->%variableName%Transformer, 'toArray'], $%classVariableName%->%getVerb%%capVariableName%());
+        }
+
+AAOAT;
+
+    switch ($type) {
+        case 'string':
+        case 'int':
+        case 'float':
+        case 'bool':
+            $arrayTemplate = $arrayAssignmentTemplate;
+            break;
+        case 'DateTime':
+            $arrayTemplate = $arrayDateTimeAssignmentTemplate;
+            break;
+        default:
+            $arrayTemplate = $arrayObjectAssignmentTemplate;
+    }
+
+    if (strpos($hintType, 'array|string[]') !== false) {
+        $arrayTemplate = $arrayArrayStringAssignmentTemplate;
+    } else if (strpos($hintType, 'array|') !== false) {
+        $arrayTemplate = $arrayArrayObjectAssignmentTemplate;
+    } else if (strpos($type, 'Model') !== false) {
+        $arrayTemplate = $arrayObjectAssignmentTemplate;
+    }
+
+    return $arrayTemplate;
 }
