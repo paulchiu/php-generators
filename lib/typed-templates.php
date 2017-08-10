@@ -120,7 +120,7 @@ AGST;
 AASAT;
 
     $arrayDateTimeAssignmentTemplate = <<<'ADTAT'
-        $array['%variableName%'] = $%classVariableName%->%getVerb%%capVariableName%()->format(DateTime::ISO8601);
+        $array['%variableName%'] = ($%classVariableName%->%getVerb%%capVariableName%()) ? $%classVariableName%->%getVerb%%capVariableName%()->format(DateTime::ISO8601) : null;
 ADTAT;
 
     $arrayObjectAssignmentTemplate = <<<'ADTAT'
