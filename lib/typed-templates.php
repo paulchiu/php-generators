@@ -9,8 +9,10 @@ function getPropertyAssignmentTemplate($type) {
 GST;
 
     $arrayAssignmentTemplate = <<<'AAT'
-        if (property_exists($shopifyJson%className%, '%variableName%')) {
-            $%camelName% = explode(',', $shopifyJson%className%->%variableName%);
+        if (property_exists($shopifyJson%className%, '%variableName%')
+            && !empty($shopifyJson%className%->%variableName%)
+        ) {
+            $%camelName% = array_map('trim', explode(',', $shopifyJson%className%->%variableName%));
             $%classVariableName%->set%capVariableName%($%camelName%);
         }
 
