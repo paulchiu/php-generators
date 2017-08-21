@@ -120,7 +120,9 @@ function getObjectArrayAssignmentTemplate($type, $hintType = null) {
 AGST;
 
     $arrayArrayStringAssignmentTemplate = <<<'AASAT'
-        $array['%variableName%'] = implode(',', $%classVariableName%->%getVerb%%capVariableName%());
+        if ($%classVariableName%->%getVerb%%capVariableName%() !== null) {
+            $array['%variableName%'] = implode(',', $%classVariableName%->%getVerb%%capVariableName%());
+        }
 AASAT;
 
     $arrayDateTimeAssignmentTemplate = <<<'ADTAT'
@@ -128,13 +130,13 @@ AASAT;
 ADTAT;
 
     $arrayObjectAssignmentTemplate = <<<'ADTAT'
-        if ($%classVariableName%->%getVerb%%capVariableName%()) {
+        if ($%classVariableName%->%getVerb%%capVariableName%() !== null) {
             $array['%variableName%'] = $this->%variableName%Transformer->toArray($%classVariableName%->%getVerb%%capVariableName%());
         }
 ADTAT;
 
     $arrayArrayObjectAssignmentTemplate = <<<'AAOAT'
-        if ($%classVariableName%->%getVerb%%capVariableName%()) {
+        if ($%classVariableName%->%getVerb%%capVariableName%() !== null) {
             $array['%variableName%'] = array_map([$this->%variableName%Transformer, 'toArray'], $%classVariableName%->%getVerb%%capVariableName%());
         }
 
