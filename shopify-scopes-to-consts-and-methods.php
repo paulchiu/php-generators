@@ -1,33 +1,10 @@
 <?php
 
+$class = 'RedirectFields';
 $scopes = [
-    'read_content',
-    'write_content',
-    'read_themes',
-    'write_themes',
-    'read_products',
-    'write_products',
-    'read_customers',
-    'write_customers',
-    'read_orders',
-    'write_orders',
-    'read_draft_orders',
-    'write_draft_orders',
-    'read_script_tags',
-    'write_script_tags',
-    'read_fulfillments',
-    'write_fulfillments',
-    'read_shipping',
-    'write_shipping',
-    'read_analytics',
-    'read_users',
-    'write_users',
-    'read_checkouts',
-    'write_checkouts',
-    'read_reports',
-    'write_reports',
-    'read_price_rules',
-    'write_price_rules',
+    'id',
+    'path',
+    'target',
 ];
 
 $constTemplate = 'const %s = \'%s\';'.PHP_EOL;
@@ -39,12 +16,12 @@ foreach ($scopes as $s) {
 $withTemplate = <<<'W'
 
     /**
-     * @return Scopes
+     * @return %s
      */
-    public function with%s(): Scopes
+    public function with%s(): %s
     {
         $new = clone $this;
-        $new->requestedScopes[] = self::%s;
+        $new->fields[] = self::%s;
 
         return $new;
     }
@@ -53,5 +30,5 @@ W;
 foreach ($scopes as $s) {
     $pascalCase = str_replace(' ', '', ucwords(str_replace('_', ' ', $s)));
     $upperCase = strtoupper($s);
-    echo sprintf($withTemplate, $pascalCase, $upperCase);
+    echo sprintf($withTemplate, $class, $pascalCase, $class, $upperCase);
 }

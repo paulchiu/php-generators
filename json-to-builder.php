@@ -3,29 +3,16 @@
 require_once __DIR__.'/lib/strings.php';
 require_once __DIR__.'/lib/typed-templates.php';
 
-$className = 'GetProductsRequest';
+$className = 'GetMetafieldsRequest';
 $filterEmpty = true;
-$wrapAsModel = 'products';
+$wrapAsModel = 'metafields';
 $json = <<<JS
 {
-  "array_ids": [1,2],
-  "page": 1,
+  "limit": 1,
   "since_id": 1,
-  "title": "a",
-  "vendor": "a",
-  "handle": "a",
-  "product_type": "a",
-  "collection_id": 1,
-  "created_at_min": "2014-04-25T16:15:47-04:00",
-  "created_at_max": "2014-04-25T16:15:47-04:00",
-  "updated_at_min": "2014-04-25T16:15:47-04:00",
-  "updated_at_max": "2014-04-25T16:15:47-04:00",
-  "published_at_min": "2014-04-25T16:15:47-04:00",
-  "published_at_max": "2014-04-25T16:15:47-04:00",
-  "published": true,
-  "unPublished": true,
-  "allPublishedStatuses": true,
-  "product_fields": {"a": "b"}
+    "path": "\/leopard",
+    "target": "\/pages\/macosx",
+  "metafield_fields": {"foo": "bar"}
 }
 JS;
 
